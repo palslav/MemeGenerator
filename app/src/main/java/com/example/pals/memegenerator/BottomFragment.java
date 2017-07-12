@@ -17,6 +17,7 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -40,7 +41,7 @@ public class BottomFragment extends Fragment{
         bottomMemeText = (TextView) view.findViewById(R.id.bottomText);
         //imgView = (ImageView) view.findViewById(R.id.imgView);
 
-        view.setOnClickListener(new View.OnClickListener() {
+        /*view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Bitmap newPhoto = getBitmapFromView(view);
@@ -54,6 +55,23 @@ public class BottomFragment extends Fragment{
                     Toast.makeText(getActivity(), "Image not saved!!", Toast.LENGTH_SHORT).show();
                 }
             }
+        });*/
+
+        view.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                Bitmap newPhoto = getBitmapFromView(view);
+                //MediaStore.Image.Media.insertImage(getContentResolver(), newPhoto, "title", "description");
+                boolean isSaved = false;
+                Context context = view.getContext();
+                isSaved = saveImageToInternalStorage(newPhoto, context);
+                if(isSaved){
+                    Toast.makeText(getActivity(), "Image saved!!", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(getActivity(), "Image not saved!!", Toast.LENGTH_SHORT).show();
+                }
+                return false;
+            }
         });
 
 
@@ -65,7 +83,7 @@ public class BottomFragment extends Fragment{
         bottomMemeText.setText(bottom);
     }
 
-    public void setMemeText(){
+    public void setMemeImage(){
         
     }
 
@@ -101,7 +119,7 @@ public class BottomFragment extends Fragment{
 
             return true;
         } catch (Exception e) {
-            //Log.e("saveToInternalStorage()", e.getMessage());
+            Log.e("saveToInternalStorage()", e.getMessage());
             return false;
         }
     }
