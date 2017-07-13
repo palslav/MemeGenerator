@@ -6,6 +6,7 @@ package com.example.pals.memegenerator;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
@@ -25,12 +26,14 @@ public class TopFragment extends Fragment{
 
     private static EditText topTextInput;
     private static EditText bottomTextInput;
+    Bitmap myImg;
     //private static ImageView imgView;
 
     TopSectionListener activityCommander;
 
     public interface TopSectionListener{
         public void createMeme(String top, String bottom);
+        public void createMemeImg(Bitmap img);
     }
 
     @Override
@@ -82,6 +85,7 @@ public class TopFragment extends Fragment{
     public void upbuttonClicked(View view){
         Intent galleryIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         startActivityForResult(galleryIntent, RESULT_LOAD_IMG);
+        activityCommander.createMemeImg(myImg);
     }
 
     private static int RESULT_LOAD_IMG = 1;
@@ -102,7 +106,7 @@ public class TopFragment extends Fragment{
                 imgDecodableString = cursor.getString(columnIndex);
                 cursor.close();
 
-
+                myImg = BitmapFactory.decodeFile(imgDecodableString);
                 //imgView.setImageBitmap(BitmapFactory.decodeFile(imgDecodableString));
             } else {
                 Toast.makeText(getActivity(), "You haven't picked Image", Toast.LENGTH_LONG).show();

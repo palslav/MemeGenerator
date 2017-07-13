@@ -11,6 +11,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
@@ -22,6 +23,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -29,8 +31,9 @@ import java.io.FileOutputStream;
 
 public class BottomFragment extends Fragment{
 
-    private static TextView topMemeText;
-    private static TextView bottomMemeText;
+    private TextView topMemeText;
+    private TextView bottomMemeText;
+    View bottomView;
     //private static ImageView imgView;
 
     @Nullable
@@ -83,8 +86,12 @@ public class BottomFragment extends Fragment{
         bottomMemeText.setText(bottom);
     }
 
-    public void setMemeImage(){
-        
+    public void setMemeImage(Bitmap bImg){
+        Drawable dImg = new BitmapDrawable(getResources(), bImg);
+        if(bImg!=null)
+            bottomView.setBackground(dImg);
+        else
+            Toast.makeText(getActivity(), "Upload Failed", Toast.LENGTH_SHORT).show();
     }
 
     public static Bitmap getBitmapFromView(View view) {

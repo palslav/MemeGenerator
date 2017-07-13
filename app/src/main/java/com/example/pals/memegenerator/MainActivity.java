@@ -1,5 +1,6 @@
 package com.example.pals.memegenerator;
 
+import android.graphics.Bitmap;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
@@ -17,5 +18,11 @@ public class MainActivity extends AppCompatActivity implements TopFragment.TopSe
         BottomFragment bottomFragment = (BottomFragment) getSupportFragmentManager().findFragmentById(R.id.fragment5);
         bottomFragment.setMemeText(top,bottom);
 
+    }
+
+    @Override
+    public void createMemeImg(Bitmap img) {
+        BottomFragment bottomFragment = (BottomFragment) getSupportFragmentManager().findFragmentById(R.id.fragment5);
+        bottomFragment.setMemeImage(img);
     }
 }
