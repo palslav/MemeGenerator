@@ -15,6 +15,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -27,14 +28,21 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import static android.content.ContentValues.TAG;
 
 public class BottomFragment extends Fragment{
 
     private TextView topMemeText;
     private TextView bottomMemeText;
     View bottomView;
-    //private static ImageView imgView;
+    //private ImageView imgView;
 
     @Nullable
     @Override
@@ -42,28 +50,14 @@ public class BottomFragment extends Fragment{
         View view = inflater.inflate(R.layout.bottom_fragment, container, false);
         topMemeText = (TextView) view.findViewById(R.id.topText);
         bottomMemeText = (TextView) view.findViewById(R.id.bottomText);
-        //imgView = (ImageView) view.findViewById(R.id.imgView);
-
-        /*view.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Bitmap newPhoto = getBitmapFromView(view);
-                //MediaStore.Image.Media.insertImage(getContentResolver(), newPhoto, "title", "description");
-                boolean isSaved = false;
-                Context context = view.getContext();
-                isSaved = saveImageToInternalStorage(newPhoto, context);
-                if(isSaved){
-                    Toast.makeText(getActivity(), "Image saved!!", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(getActivity(), "Image not saved!!", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });*/
+        //imgView = (ImageView) view.findViewById(R.id.imageView2);
+        bottomView = view;
 
         view.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {
                 Bitmap newPhoto = getBitmapFromView(view);
+                //imgView.setImageBitmap(newPhoto);
                 //MediaStore.Image.Media.insertImage(getContentResolver(), newPhoto, "title", "description");
                 boolean isSaved = false;
                 Context context = view.getContext();
@@ -86,14 +80,19 @@ public class BottomFragment extends Fragment{
         bottomMemeText.setText(bottom);
     }
 
-    public void setMemeImage(Bitmap bImg){
-        Drawable dImg = new BitmapDrawable(getResources(), bImg);
-        if(bImg!=null)
-            bottomView.setBackground(dImg);
-        else
-            Toast.makeText(getActivity(), "Upload Failed", Toast.LENGTH_SHORT).show();
+    public void setMemeImage(ImageView Img){
+        //imgView.setImageDrawable(Img.getDrawable());
+        if(Img!=null) {
+            if (bottomView != null)
+                bottomView.setBackground(Img.getDrawable());
+            else
+                Toast.makeText(getActivity(), "Upload Failed", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(getActivity(), "NULL DATA!!", Toast.LENGTH_SHORT).show();
+        }
     }
 
+    /** Getting view as Bitmap Image */
     public static Bitmap getBitmapFromView(View view) {
         //Define a bitmap with the same size as the view
         Bitmap returnedBitmap = Bitmap.createBitmap(view.getWidth(), view.getHeight(),Bitmap.Config.ARGB_8888);
@@ -113,21 +112,48 @@ public class BottomFragment extends Fragment{
         return returnedBitmap;
     }
 
+    /** Saving Image to Internal Storage */
     public static boolean saveImageToInternalStorage(Bitmap image, Context context) {
-
+        File pictureFile = getOutputMediaFile(context);
+        if (pictureFile == null) {
+            Log.d(TAG, "Error creating media file, check storage permissions: ");// e.getMessage());
+            return false;
+        }
         try {
-            // Use the compress method on the Bitmap object to write image to
-            // the OutputStream
-            FileOutputStream fos = context.openFileOutput("desiredFilename.jpeg", Context.MODE_PRIVATE);
+            FileOutputStream fos = new FileOutputStream(pictureFile);
+            image.compress(Bitmap.CompressFormat.JPEG, 90, fos);
 
-            // Writing the bitmap to the output stream
-            image.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+            Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+            intent.setData(Uri.fromFile(pictureFile));
+            context.sendBroadcast(intent);
+
+            fos.flush();
             fos.close();
 
             return true;
-        } catch (Exception e) {
-            Log.e("saveToInternalStorage()", e.getMessage());
-            return false;
+        } catch (FileNotFoundException e) {
+            Log.d(TAG, "File not found: " + e.getMessage());
+        } catch (IOException e) {
+            Log.d(TAG, "Error accessing file: " + e.getMessage());
         }
+        return false;
+    }
+
+    /** Create a File for saving an image or video */
+    public static File getOutputMediaFile(Context context){
+        String root = Environment.getExternalStorageDirectory().getAbsolutePath();
+        File myDir = new File(root + "/saved_images");
+        if (! myDir.exists()){
+            if (! myDir.mkdirs()){
+                return null;
+            }
+        }
+        Log.d(TAG, "mediastoragepath: " + myDir.toString());
+        // Create a media file name
+        String timeStamp = new SimpleDateFormat("ddMMyyyy_HHmmss").format(new Date());
+        File mediaFile;
+        String mImageName="MG_"+ timeStamp +".jpg";
+        mediaFile = new File(myDir.getPath() + File.separator + mImageName);
+        return mediaFile;
     }
 }

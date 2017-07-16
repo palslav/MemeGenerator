@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,18 +23,23 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import static android.content.ContentValues.TAG;
+
 public class TopFragment extends Fragment{
 
-    private static EditText topTextInput;
-    private static EditText bottomTextInput;
+    private EditText topTextInput;
+    private EditText bottomTextInput;
     Bitmap myImg;
-    //private static ImageView imgView;
+    ImageView viewImg;
+
+    private static int RESULT_LOAD_IMG = 1;
+    String imgDecodableString;
 
     TopSectionListener activityCommander;
 
     public interface TopSectionListener{
         public void createMeme(String top, String bottom);
-        public void createMemeImg(Bitmap img);
+        public void createMemeImg(ImageView img);
     }
 
     @Override
@@ -55,12 +61,12 @@ public class TopFragment extends Fragment{
         bottomTextInput = (EditText) view.findViewById(R.id.bottomTextEdit);
         final Button button = (Button) view.findViewById(R.id.button);
         final Button upbutton = (Button) view.findViewById(R.id.upbutton);
-        //imgView = (ImageView) view.findViewById(R.id.imgView);
+        viewImg = (ImageView) view.findViewById(R.id.imageView);
 
         button.setOnClickListener(
                 new View.OnClickListener(){
                     public void onClick(View v){
-                        buttonClicked(v);
+                        hitButtonClicked(v);
                     }
                 }
         );
@@ -68,7 +74,7 @@ public class TopFragment extends Fragment{
         upbutton.setOnClickListener(
                 new View.OnClickListener(){
                     public void onClick(View v){
-                        upbuttonClicked(v);
+                        upButtonClicked(v);
                     }
                 }
         );
@@ -76,20 +82,14 @@ public class TopFragment extends Fragment{
         return view;
     }
 
-    public void buttonClicked(View view){
+    public void hitButtonClicked(View view){
         activityCommander.createMeme(topTextInput.getText().toString(),bottomTextInput.getText().toString());
     }
 
-    //private static int RESULT_LOAD_IMG = 1;
-
-    public void upbuttonClicked(View view){
+    public void upButtonClicked(View view){
         Intent galleryIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         startActivityForResult(galleryIntent, RESULT_LOAD_IMG);
-        activityCommander.createMemeImg(myImg);
     }
-
-    private static int RESULT_LOAD_IMG = 1;
-    String imgDecodableString;
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -107,12 +107,14 @@ public class TopFragment extends Fragment{
                 cursor.close();
 
                 myImg = BitmapFactory.decodeFile(imgDecodableString);
-                //imgView.setImageBitmap(BitmapFactory.decodeFile(imgDecodableString));
+                viewImg.setImageBitmap(myImg);
+                activityCommander.createMemeImg(viewImg);
             } else {
                 Toast.makeText(getActivity(), "You haven't picked Image", Toast.LENGTH_LONG).show();
             }
         } catch (Exception e){
             Toast.makeText(getActivity(), "Some thing went Wrong!!", Toast.LENGTH_LONG).show();
+            Log.d(TAG, "TOP Exception : " + e.getMessage());
         }
     }
 }
